@@ -26,11 +26,11 @@
 ### Running the script 
     
     How to run the script, Type this (Pressing Tab will autocomplete)
-    .\MapReName.ps1 
+*.\MapReName.ps1*
 
     A list of your maps will show with an Index number and details.
     Use the index to select the map you want like dis,
-    .\MapReName 1
+*.\MapReName 1*
 
     You will be asked N/D/S,
     N: Change Name
