@@ -1,7 +1,8 @@
-﻿<#
+<#
     From Wheat to Toast
 
-    By Lengthybread409#
+    By Lengthybread409
+    https://github.com/lengthybread409/Halo-3-MCC-Map-Name-Changer    
 #>
 ######################################################
 <#  Setting up Powershell for the first time.
@@ -220,6 +221,7 @@ if ($index -ge 0){
         $input = (Read-Host "Options N/D/S").toupper()
     }
     else{
+        Write-Host "Options N/D/S: $preopt"
         $input = $preopt
     }
     switch($input){
@@ -239,6 +241,11 @@ if ($index -ge 0){
                     write-Host "Over by $($name.Length-15) charicters"
                 }
             }
+            write-Host ""
+            Write-Host "`t$($maps[$index].name)" -ForegroundColor Green
+            write-Host "`t$($maps[$index].Discription)" -ForegroundColor Cyan
+            Write-Host "`tAltered: " -NoNewline;Write-Host "$($maps[$index].edit)    " -ForegroundColor Magenta -NoNewline; Write-Host "$($maps[$index].file)" -ForegroundColor DarkRed
+            write-Host ""
         }
         'D'{
             $Discription = $maps[$index].Discription
@@ -256,6 +263,11 @@ if ($index -ge 0){
                     write-Host "Over by $($discription.Length-127) charicters"
                 }
             }
+            write-Host ""
+            Write-Host "`t$($maps[$index].name)" -ForegroundColor Green
+            write-Host "`t$($maps[$index].Discription)" -ForegroundColor Cyan
+            Write-Host "`tAltered: " -NoNewline;Write-Host "$($maps[$index].edit)    " -ForegroundColor Magenta -NoNewline; Write-Host "$($maps[$index].file)" -ForegroundColor DarkRed
+            write-Host ""
         }
         'S'{
             $save_list = ($maps | Where-Object -FilterScript {$_.edit})
@@ -269,7 +281,7 @@ if ($index -ge 0){
                     $name += 0;$Discription += 0;
                     $filen = $file[0..0x48] + $name + $Discription + $file[0xe8..0x150] + $name + $Discription + $file[0x1f0..($file.Count-1)]
 
-                    [io.file]::WriteAllBytes("$($emap.File.DirectoryName)\$($emap.Name)_A.mvar",$filen)
+                    [io.file]::WriteAllBytes("$($emap.File.DirectoryName)\$($emap.Name).mvar",$filen)
                     $maps[$maps.file.IndexOf($emap.file)].edit = $false
                 }
                 else{
@@ -283,11 +295,9 @@ if ($index -ge 0){
                     $end = 0
 
                     ($emap.type+1)..($file.Count-1) | %{
-                        if($file[$_-3] -ne 0 -and $file[$_-2] -eq 0 -and $file[$_-1] -eq 0 -and $file[$_] -eq 0){
-                            $end = $_-1
-                        }
-                        elseif($file[$_] -ne 0){
-                            $end = $_
+                        #Write-Host $($file[$_-3]) $($file[$_-2]) $($file[$_-1]) $($file[$_])
+                        if($file[$_-3] -eq 0x5f -and $file[$_-2] -eq 0x65 -and $file[$_-1] -eq 0x6f -and $file[$_] -eq 0x66){
+                            $end = $_+14
                         }
                     }
 
@@ -295,20 +305,20 @@ if ($index -ge 0){
 
                     $filen[0x87] = ($file[0x87]-($emap.nameOG.length*2)-$emap.DiscriptionOG.Length)+$emap.Name.Length*2+$emap.Discription.Length
 
-                    [io.file]::WriteAllBytes("$($emap.File.DirectoryName)\$($emap.Name)_B.mvar",$filen)
+                    [io.file]::WriteAllBytes("$($emap.File.DirectoryName)\$($emap.Name).mvar",$filen)
 
                     $maps[$maps.file.name.IndexOf($emap.file.Name)].edit = $false
                 }
+                write-Host ""
+                Write-Host "`t$($emap.name)" -ForegroundColor Green
+                write-Host "`t$($emap.Discription)" -ForegroundColor Cyan
+                Write-Host "`tAltered: " -NoNewline;Write-Host "$($emap.edit)    " -ForegroundColor Magenta -NoNewline; Write-Host "$($emap.file)" -ForegroundColor DarkRed
+                write-Host ""
             }
 
         }
         default{Write-Host "Unknown option"}
     }
-    write-Host ""
-    Write-Host "`t$($maps[$index].name)" -ForegroundColor Green
-    write-Host "`t$($maps[$index].Discription)" -ForegroundColor Cyan
-    Write-Host "`tAltered: " -NoNewline;Write-Host "$($maps[$index].edit)    " -ForegroundColor Magenta -NoNewline; Write-Host "$($maps[$index].file)" -ForegroundColor DarkRed
-    write-Host ""
 }
 else{
     0..($maps.Count-1) | %{
