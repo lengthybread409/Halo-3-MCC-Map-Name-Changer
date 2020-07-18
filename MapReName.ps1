@@ -119,28 +119,28 @@ function global:H3{
     -0001{$base="Assembly"}
 
     -10751{$base="Avalanche"}
-    -0001{$base="Avalanche"}
+    22535{$base="Avalanche"}
     
     -0001{$base="Blackout"}
-    -0001{$base="Blackout"}
+    2050{$base="Blackout"}
     
-    -0001{$base="Citadel."}
-    -0001{$base="Citadel."}
+    -0001{$base="Citadel"}
+    -0001{$base="Citadel"}
 
     22530{$base="Cold Storage"}
-    -0001{$base="Cold Storage"}
+    24585{$base="Cold Storage"}
     
     -20476{$base="Construct"}
-    -0001{$base="Construct"}
+    11265{$base="Construct"}
     
     30725{$base="Epitaph"}
-    30725{$base="Epitaph"}
+    24065{$base="Epitaph"}
 
     -8191 {$base="Foundry"}
     -32761{$base="Foundry"}
     
     -0001{$base="Ghost Town"}
-    -0001{$base="Ghost Town"}
+    14345{$base="Ghost Town"}
 
     16385{$base="Guardian"}
     5{$base="Guardian"}
@@ -149,25 +149,25 @@ function global:H3{
     16395{$base="Heretic"}
 
     13825{$base="High Ground"}
-    -0001{$base="High Ground"}
+    -10236{$base="High Ground"}
     
     -0001{$base="Isolation"}
-    -0001{$base="Isolation"}
+    10245{$base="Isolation"}
 
     7680{$base="Last Resort"}
-    -0001{$base="Last Resort"}
+    30720{$base="Last Resort"}
     
     -0001{$base="Longshore"}
-    -0001{$base="Longshore"}
+    -8186{$base="Longshore"}
     
     -4091{$base="Narrows"}
-    -4091{$base="Narrows"}
+    31745{$base="Narrows"}
     
     -0001{$base="Orbital"}
-    -0001{$base="Orbital"}
+    -12281{$base="Orbital"}
     
     -0001{$base="Rat's Nest"}
-    -0001{$base="Rat's Nest"}
+    4105{$base="Rat's Nest"}
     
     -9726{$base="Sandbox"}
     26635{$base="Sandbox"}
@@ -184,8 +184,8 @@ function global:H3{
     -31231{$base="The Pit"}
     6150{$base="The Pit"}
     
-    -0001{$base="Valhalla"}
-    -0001{$base="Valhalla"}
+    20485{$base="Valhalla"}
+    21505{$base="Valhalla"}
     default{$base = $id}
         }
         if($name[0] -ne '?' -or $name[0] -ne '$' -or $Discription[0] -eq '?' -or $Discription[0] -ne '?' -or $Discription[0] -ne '$'){
