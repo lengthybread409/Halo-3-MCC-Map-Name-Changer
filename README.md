@@ -11,10 +11,10 @@
 
 ### Setting up this script
     
-    Move this script to the "Halo The Master Chief Collection"
-    under the commons folder in steam.
+    Create a folder in any halo 3 map location, Appdata or MCC. can be name WIP
+    Then move the script in that folder with all the maps you want to edit.
 
-    mcclauncher.exe will be in the same folder
+    edited maps will be moved in the parent directory, or into the working map folder
     
 ### Run Powershell
     
@@ -36,5 +36,8 @@
     N: Change Name
     D: Change Discription
     S: Save changes
+
+    If a map is a special type of map, there will be file created called Hand.txt.
+    I cant help you at this point and you will need to do it yourself.
 
     THATS ALL FOLKS
