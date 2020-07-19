@@ -15,10 +15,10 @@
 ######################################################
 <#  Setting up this script
     
-    Move this script to the "Halo The Master Chief Collection"
-    under the commons folder in steam.
+    Create a folder in any halo 3 map location, Appdata or MCC. can be name WIP
+    Then move the script in that folder with all the maps you want to edit.
 
-    mcclauncher.exe will be in the same folder
+    edited maps will be moved in the parent directory, or into the working map folder
 #>
 ######################################################
 <#  Run Powershell
@@ -43,6 +43,9 @@
     D: Change Discription
     S: Save changes
 
+    If a map is a special type of map, there will be file created called Hand.txt.
+    I cant help you at this point and you will need to do it yourself.
+
     THATS ALL FOLKS
 #>
 
@@ -60,11 +63,12 @@ function global:H3{
     }}catch{}
     Write-Host "Creating Map List, Please wait."
     $Global:maps = @()
-    $list = (Get-ChildItem "./halo3\map_variants\*.mvar" -File) + (Get-ChildItem "$env:APPDATA\..\LocalLow\MCC\LocalFiles\*\halo3\Map\*.mvar" -File)
+    $list = (Get-ChildItem ".\*.mvar" -File)
 
     $map_ls = @()
+    $skip = 0
 
-    foreach($map in 0..($list.Count-1)){
+    foreach($map in 0..($list.Count-1)){try{
         #Name
         $type = 0
         $temp = [System.Text.Encoding]::ASCII.GetString([System.IO.File]::ReadAllBytes($list[$map]),0x49,160)
@@ -98,11 +102,20 @@ function global:H3{
                 }
             }
         }
+        if($type -eq 0){
+            $temp1=[System.IO.File]::ReadAllBytes($list[$map])[0xe8..0xf7]
+            $temp2=[System.IO.File]::ReadAllBytes($list[$map])[0x1f0..0x1ff]
+            0..($temp1.Count-1) | %{
+                if($type -eq 0 -and $temp1[$_] -ne $temp2[$_]){
+                    $type = -1
+                }
+            }
+        }
         
         #base
-        $base = "UnKnown";$id = 0;
-        if ($type -eq 0){
-            #$id = [bitconverter]::ToInt16(([System.IO.File]::ReadAllBytes($list[$map])[0x122,0x123]),0)
+        $base = "UnKnown";
+        if ($type -le 0){
+            $id = [bitconverter]::ToInt16(([System.IO.File]::ReadAllBytes($list[$map])[0x122,0x123]),0)
         }
         else{
             #$id = [bitconverter]::ToInt16(([System.IO.File]::ReadAllBytes($list[$map])[$type+0x3d,$type+0x3e]),0)
@@ -151,7 +164,7 @@ function global:H3{
     13825{$base="High Ground"}
     -10236{$base="High Ground"}
     
-    -0001{$base="Isolation"}
+    18945{$base="Isolation"}
     10245{$base="Isolation"}
 
     7680{$base="Last Resort"}
@@ -188,7 +201,7 @@ function global:H3{
     21505{$base="Valhalla"}
     default{$base = $id}
         }
-        if($name[0] -ne '?' -or $name[0] -ne '$' -or $Discription[0] -eq '?' -or $Discription[0] -ne '?' -or $Discription[0] -ne '$'){
+        if(($name[0] -ne '?' -and $name[0] -ne '$') -and ($Discription[0] -ne '?' -and $Discription[0] -ne '$') -and ($name -ne "")){
             $map_ls += [PSCustomObject]@{
                 Name = $name.trim()
                 File = $list[$map]
@@ -197,15 +210,21 @@ function global:H3{
                 DiscriptionOG = $Discription.trim()
                 Edit = $false
                 Type = $type
-                Index =$map
+                Index =($map-$skip)
                 Base = $base
             }
+        }
+        else{
+            $skip += 1
+        }
+        }catch{
+        Write-Host -ForegroundColor Red "ERROR with $($list[$map].name)"
+        $skip += 1
         }
     }
     $Global:maps = $map_ls
     return $true
 }
-
 
 $a = h3
 
@@ -228,6 +247,7 @@ if ($index -ge 0){
         'N'{
             $name = $maps[$index].name
             while ($true){
+                Write-Host "$(' '*(22+15))|Max"
                 $name = Read-Host "What is the new name"
                 if($name.Length -lt 16){
                     $maps[$index].name = $name
@@ -250,13 +270,14 @@ if ($index -ge 0){
         'D'{
             $Discription = $maps[$index].Discription
             while ($true){
+                Write-Host "$(' '*(29+127))|Max"
                 $discription = Read-Host "What is the new discription"
                 if($discription.Length -lt 128){
                     $maps[$index].Discription = $discription
                     $maps[$index].edit = $true
                     break
                 }
-                elseif ($name -eq ""){
+                elseif ($discription -eq ""){
                     break
                 }
                 else{
@@ -272,48 +293,63 @@ if ($index -ge 0){
         'S'{
             $save_list = ($maps | Where-Object -FilterScript {$_.edit})
             foreach ($emap in $save_list){
-                if($emap.type -eq 0){
-                    $file = [System.IO.File]::ReadAllBytes($emap.file)
-                    $name = @()
-                    0..14 | %{if($emap.name.ToCharArray()[$_] -ne $mull){$name += ([int]$emap.name.ToCharArray()[$_],0)}else{$name += (0,0)}}
-                    $Discription = @()
-                    0..126 | %{if($emap.Discription.ToCharArray()[$_] -ne $mull){$Discription += [int]$emap.Discription.ToCharArray()[$_]}else{$Discription += 0}}
-                    $name += 0;$Discription += 0;
-                    $filen = $file[0..0x48] + $name + $Discription + $file[0xe8..0x150] + $name + $Discription + $file[0x1f0..($file.Count-1)]
+                if(0 -lt $emap.Name.Length -and $emap.Name.Length -lt 16 -and 0 -lt $emap.Discription.Length -and $emap.Discription.Length -lt 128){
+                    if($emap.Base -eq 0){
+                        Write-Host "ERROR: Do $($emap.Index) by hand" -ForegroundColor Red -BackgroundColor Black
+                    }
+                    elseif($emap.type -le 0){
+                        $file = [System.IO.File]::ReadAllBytes($emap.file)
+                        $name = @()
+                        0..14 | %{if($emap.name.ToCharArray()[$_] -ne $mull){$name += ([int]$emap.name.ToCharArray()[$_],0)}else{$name += (0,0)}}
+                        $Discription = @()
+                        0..126 | %{if($emap.Discription.ToCharArray()[$_] -ne $mull){$Discription += [int]$emap.Discription.ToCharArray()[$_]}else{$Discription += 0}}
+                        $name += 0;$Discription += 0;
 
-                    [io.file]::WriteAllBytes("$($emap.File.DirectoryName)\$($emap.Name).mvar",$filen)
-                    $maps[$maps.file.IndexOf($emap.file)].edit = $false
+                        
+                        if($emap.type -eq 0){
+                            $filen = $file[0..0x48] + $name + $Discription + $file[0xe8..0x150] + $name + $Discription + $file[0x1f0..($file.Count-1)]
+                        }else{
+                            $filen = $file[0..0x48] + $name + $Discription + $file[0xe8..($file.Count-1)]
+                            "$($emap.base)`t$($emap.Name)`t$($emap.NameOG)" >> "./Hand.txt"
+                        }
+                        
+                        [io.file]::WriteAllBytes("..\$($emap.Name -replace '[\W]', '').mvar",$filen)
+                        $maps[$maps.file.IndexOf($emap.file)].edit = $false
+                    }
+                    else{
+                        $file = [System.IO.File]::ReadAllBytes($emap.file)
+                        $name = @()
+                        $emap.name.ToCharArray() | %{$name += ([int]$_,0)}
+                        $Discription = @()
+                        $emap.Discription.ToCharArray() | %{$Discription += [int]$_}
+                        $name += 0;$Discription += 0;
+
+                        $end = 0
+
+                        ($emap.type+1)..($file.Count-1) | %{
+                            #Write-Host $($file[$_-3]) $($file[$_-2]) $($file[$_-1]) $($file[$_])
+                            if($file[$_-3] -eq 0x5f -and $file[$_-2] -eq 0x65 -and $file[$_-1] -eq 0x6f -and $file[$_] -eq 0x66){
+                                $end = $_+14
+                            }
+                        }
+
+                        $filen = $file[0..0x94] + $name + $Discription + $file[($emap.type+1)..$end]
+
+                        $filen[0x87] = ($file[0x87]-($emap.nameOG.length*2)-$emap.DiscriptionOG.Length)+$emap.Name.Length*2+$emap.Discription.Length
+
+                        [io.file]::WriteAllBytes("..\$($emap.Name -replace '[\W]', '').mvar",$filen)
+
+                        $maps[$maps.file.name.IndexOf($emap.file.Name)].edit = $false
+                    }
+                    write-Host ""
+                    Write-Host "`t$($emap.name)" -ForegroundColor Green
+                    write-Host "`t$($emap.Discription)" -ForegroundColor Cyan
+                    Write-Host "`tAltered: " -NoNewline;Write-Host "$($emap.edit)    " -ForegroundColor Magenta -NoNewline; Write-Host "$($emap.file)" -ForegroundColor DarkRed
+                    write-Host ""
                 }
                 else{
-                    $file = [System.IO.File]::ReadAllBytes($emap.file)
-                    $name = @()
-                    $emap.name.ToCharArray() | %{$name += ([int]$_,0)}
-                    $Discription = @()
-                    $emap.Discription.ToCharArray() | %{$Discription += [int]$_}
-                    $name += 0;$Discription += 0;
-
-                    $end = 0
-
-                    ($emap.type+1)..($file.Count-1) | %{
-                        #Write-Host $($file[$_-3]) $($file[$_-2]) $($file[$_-1]) $($file[$_])
-                        if($file[$_-3] -eq 0x5f -and $file[$_-2] -eq 0x65 -and $file[$_-1] -eq 0x6f -and $file[$_] -eq 0x66){
-                            $end = $_+14
-                        }
-                    }
-
-                    $filen = $file[0..0x94] + $name + $Discription + $file[($emap.type+1)..$end]
-
-                    $filen[0x87] = ($file[0x87]-($emap.nameOG.length*2)-$emap.DiscriptionOG.Length)+$emap.Name.Length*2+$emap.Discription.Length
-
-                    [io.file]::WriteAllBytes("$($emap.File.DirectoryName)\$($emap.Name).mvar",$filen)
-
-                    $maps[$maps.file.name.IndexOf($emap.file.Name)].edit = $false
+                    Write-Host "ERROR: $($emap.Index) is incoret" -ForegroundColor Red -BackgroundColor Black
                 }
-                write-Host ""
-                Write-Host "`t$($emap.name)" -ForegroundColor Green
-                write-Host "`t$($emap.Discription)" -ForegroundColor Cyan
-                Write-Host "`tAltered: " -NoNewline;Write-Host "$($emap.edit)    " -ForegroundColor Magenta -NoNewline; Write-Host "$($emap.file)" -ForegroundColor DarkRed
-                write-Host ""
             }
 
         }
